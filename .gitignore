@@ -1,8 +1,5 @@
 # Node_modules
-node_modules/   
-
-# Build output
-dist/   
+node_modules
 
 #.env file  
 .env    
