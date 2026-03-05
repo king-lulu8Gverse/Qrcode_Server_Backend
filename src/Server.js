@@ -11,7 +11,7 @@ dotenv.config();
 
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 4000;
 
 app.use(cors({
   origin: "http://localhost:5173", 
@@ -26,9 +26,9 @@ app.use("/api/sessions", sessionRoutes);
 app.use("/api/attendance", attendanceRoutes);
 
 app.get("/", (req, res) => {
-  res.send("Attendance System API Running");
+  res.send("Attendance For QRCode System API Running");
 });
 
 app.listen(PORT, () => {
-  console.log(`My server is running on port: ${PORT}`);
+  console.log(`Server is running on port: ${PORT}`);
 });
