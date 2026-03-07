@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import db from "./db.js";
 
 import authRoutes from "./routes/auth.js";
 import courseRoutes from "./routes/courses.js";
@@ -11,10 +12,10 @@ dotenv.config();
 
 
 const app = express();
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 5000;
 
 app.use(cors({
-  origin: "http://localhost:5173", 
+  origin: true,
   credentials: true
 }));
 app.use(express.json());
@@ -26,7 +27,7 @@ app.use("/api/sessions", sessionRoutes);
 app.use("/api/attendance", attendanceRoutes);
 
 app.get("/", (req, res) => {
-  res.send("Attendance For QRCode System API Running");
+  res.send("QRCode System API Running");
 });
 
 app.listen(PORT, () => {
