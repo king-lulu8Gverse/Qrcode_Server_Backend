@@ -1,12 +1,12 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import db from "../db.js";
+import db from "./db.js";
 
-import authRoutes from "./routes/auth.js";
-import courseRoutes from "./routes/courses.js";
-import sessionRoutes from "./routes/sessions.js";
-import attendanceRoutes from "./routes/attendance.js";
+import authRoutes from "./src/routes/auth.js";
+import courseRoutes from "./src/routes/courses.js";
+import sessionRoutes from "./src/routes/sessions.js";
+import attendanceRoutes from "./src/routes/attendance.js";
 
 dotenv.config();
 
