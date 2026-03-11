@@ -27,7 +27,7 @@ app.use("/api/sessions", sessionRoutes);
 app.use("/api/attendance", attendanceRoutes);
 
 app.get("/", (req, res) => {
-  res.send("QRCode System API Running");
+  res.json({ message: "Attendance System API Running" });
 });
 
 app.listen(PORT, () => {
