@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import db from "./db.js";
+import db from "../db.js";
 
 import authRoutes from "./routes/auth.js";
 import courseRoutes from "./routes/courses.js";
