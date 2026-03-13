@@ -23,4 +23,18 @@ router.post("/", authMiddleware, async (req, res) => {
   }
 });
 
+
+router.get("/", authMiddleware, async (req, res) => {
+  try {
+    const [courses] = await db.execute(
+      "SELECT * FROM courses WHERE lecturer_id = ?",
+      [req.user.id]
+    );
+
+    res.json(courses);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;
