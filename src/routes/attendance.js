@@ -53,4 +53,36 @@ router.get("/session/:sessionId", authMiddleware, async (req, res) => {
   }
 });
 
-export default router;
+
+// routes/attendance.js
+router.get("/lecturer", authMiddleware, async (req, res) => {
+  try {
+    // 1. Fetch sessions for this lecturer
+    const [sessions] = await db.execute(
+      "SELECT s.id, s.course_id, s.date, c.name AS course_name FROM sessions s JOIN courses c ON s.course_id = c.id WHERE s.lecturer_id = ?",
+      [req.user.id]
+    );
+
+    // 2. Fetch attendees for each session
+    const result = await Promise.all(sessions.map(async (session) => {
+      const [attendees] = await db.execute(
+        `SELECT u.name, u.matric_number, u.department, u.faculty
+         FROM attendance a
+         JOIN users u ON a.student_id = u.id
+         WHERE a.session_id = ?`,
+        [session.id]
+      );
+      return {
+        _id: session.id,
+        course: { id: session.course_id, name: session.course_name },
+        date: session.date,
+        attendees
+      };
+    }));
+
+    res.json(result);
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
