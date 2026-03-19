@@ -8,6 +8,7 @@ const router = express.Router();
 router.get("/lecturer", authMiddleware, async (req, res) => {
   try {
     // 1. Fetch sessions for this lecturer
+    console.log("lecturer route hits");
     const [sessions] = await db.execute(
       "SELECT s.id, s.course_id, s.date, c.name AS course_name FROM sessions s JOIN courses c ON s.course_id = c.id WHERE s.lecturer_id = ?",
       [req.user.id]
