@@ -87,3 +87,4 @@ router.post("/:token", authMiddleware, async (req, res) => {
   }
 });
 
+export default router;
