@@ -51,6 +51,29 @@ router.get("/lecturer", authMiddleware, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+router.get("/student", authMiddleware, async (req, res) => {
+  try {
+    const [rows] = await db.execute(
+      `SELECT 
+        a.id,
+        c.name AS course_name,
+        s.date,
+        s.start_time
+       FROM attendance a
+       JOIN sessions s ON a.session_id = s.id
+       JOIN courses c ON s.course_id = c.id
+       WHERE a.student_id = ?`,
+      [req.user.id],
+    );
+
+    res.json(rows);
+  } catch (err) {
+    console.error("Student attendance error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // View Attendance
 router.get("/session/:sessionId", authMiddleware, async (req, res) => {
   try {
