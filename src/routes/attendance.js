@@ -57,7 +57,7 @@ router.get("/student", authMiddleware, async (req, res) => {
     const [rows] = await db.execute(
       `SELECT 
         a.id,
-        c.name AS course_name,
+        c.course_name AS course_name,
         s.date,
         s.start_time
        FROM attendance a
