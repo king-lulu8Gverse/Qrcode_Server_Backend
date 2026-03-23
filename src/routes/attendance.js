@@ -52,6 +52,58 @@ router.get("/lecturer", authMiddleware, async (req, res) => {
   }
 });
 
+
+// GET /api/lecturer/dashboard-stats
+router.get("/lecturer/dashboard-stats", authMiddleware, async (req, res) => {
+  try {
+    const lecturerId = req.user.id;
+
+    // Total Courses
+    const [courses] = await db.execute(
+      `SELECT COUNT(*) AS totalCourses FROM courses WHERE lecturer_id = ?`,
+      [lecturerId]
+    );
+
+    // Ongoing Sessions
+    const [ongoingSessions] = await db.execute(
+      `SELECT COUNT(*) AS ongoingSessions FROM sessions WHERE lecturer_id = ? AND is_active = TRUE`,
+      [lecturerId]
+    );
+
+    // Total Students (you can adjust to students enrolled in lecturer's courses)
+    const [students] = await db.execute(
+      `SELECT COUNT(*) AS totalStudents FROM users WHERE role='student'`
+    );
+
+    // Average Attendance
+    const [attendanceData] = await db.execute(
+      `SELECT 
+         COUNT(CASE WHEN status='present' THEN 1 END) AS presentCount,
+         COUNT(*) AS totalCount
+       FROM attendance a
+       JOIN sessions s ON a.session_id = s.id
+       WHERE s.lecturer_id = ?`,
+      [lecturerId]
+    );
+
+    const avgAttendance =
+      attendanceData[0].totalCount > 0
+        ? Math.round((attendanceData[0].presentCount / attendanceData[0].totalCount) * 100)
+        : 0;
+
+    res.json({
+      totalCourses: courses[0].totalCourses,
+      ongoingSessions: ongoingSessions[0].ongoingSessions,
+      totalStudents: students[0].totalStudents,
+      avgAttendance,
+    });
+  } catch (err) {
+    console.error("Dashboard stats error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 router.get("/student", authMiddleware, async (req, res) => {
   try {
     const [rows] = await db.execute(
