@@ -130,11 +130,17 @@ router.get("/student", authMiddleware, async (req, res) => {
 router.get("/session/:sessionId", authMiddleware, async (req, res) => {
   try {
     const [rows] = await db.execute(
-      `SELECT users.name, users.matric_number, users.department, users.faculty
+      `SELECT 
+       users.name, 
+       users.matric_number, 
+       users.department, 
+       users.faculty,
+       attendance.timestamp
        FROM attendance
        JOIN users ON attendance.student_id = users.id
-       WHERE attendance.session_id = ?`,
-      [req.params.sessionId],
+       WHERE attendance.session_id = ?
+       ORDER BY attendance.timestamp DESC`,
+      [req.params.sessionId]
     );
 
     res.json(rows);
@@ -142,7 +148,6 @@ router.get("/session/:sessionId", authMiddleware, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
 // Mark Attendance
 router.post("/:token", authMiddleware, async (req, res) => {
   try {
