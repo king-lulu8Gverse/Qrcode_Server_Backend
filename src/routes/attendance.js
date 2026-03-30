@@ -15,7 +15,7 @@ router.get("/lecturer", authMiddleware, async (req, res) => {
         c.course_name
       FROM sessions s
       JOIN courses c ON s.course_id = c.id
-      WHERE s.lecturer_id = ?`,
+      WHERE c.lecturer_id = ?`,
       [req.user.id],
     );
 
@@ -26,7 +26,8 @@ router.get("/lecturer", authMiddleware, async (req, res) => {
             u.name, 
             u.matric_number, 
             u.department, 
-            u.faculty
+            u.faculty,
+            a.timestamp
            FROM attendance a
            JOIN users u ON a.student_id = u.id
            WHERE a.session_id = ?`,
@@ -37,7 +38,7 @@ router.get("/lecturer", authMiddleware, async (req, res) => {
           _id: session.id,
           course: {
             id: session.course_id,
-            name: session.course_name, // ✅ now correct
+            name: session.course_name,
           },
           date: session.date,
           attendees,
@@ -46,12 +47,12 @@ router.get("/lecturer", authMiddleware, async (req, res) => {
     );
 
     res.json(result);
+
   } catch (err) {
     console.error("Lecturer attendance error:", err);
     res.status(500).json({ error: err.message });
   }
 });
-
 
 // GET /api/lecturer/dashboard-stats
 router.get("/lecturer/dashboard-stats", authMiddleware, async (req, res) => {
