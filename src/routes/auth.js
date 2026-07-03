@@ -41,6 +41,7 @@ router.post("/register", upload.single("face"), async (req, res) => {
 
     // Save face image if it's a student
     if (role === "student" && req.file) {
+      console.log(req.file);
       await db.execute(
         `INSERT INTO user_faces (user_id, image_path)
          VALUES (?, ?)`,
