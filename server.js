@@ -31,6 +31,17 @@ app.get("/", (req, res) => {
   res.json({ message: "Attendance System API Running" });
 });
 
+app.use((err, req, res, next) => {
+  console.error("Global Error:");
+  console.error(err);
+
+  res.status(500).json({
+    success: false,
+    message: err.message,
+    stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on port: ${PORT}`);
 });
