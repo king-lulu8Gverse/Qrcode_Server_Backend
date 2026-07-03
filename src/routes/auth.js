@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import db from "../../db.js";
 import dotenv from "dotenv";
-import {upload} from "../../middleware/upload.js";
+import {upload} from "../middleware/upload.js";
 
 dotenv.config();
 
