@@ -3,27 +3,62 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import db from "../../db.js";
 import dotenv from "dotenv";
+import {upload} from "../../middleware/upload.js";
 
 dotenv.config();
 
 const router = express.Router();
 
 // REGISTER
-router.post("/register", async (req, res) => {
-  const { name, email, password, role, matric_number, department, faculty } =
-    req.body;
+router.post("/register", upload.single("face"), async (req, res) => {
+  const {
+    name,
+    email,
+    password,
+    role,
+    matric_number,
+    department,
+    faculty,
+  } = req.body;
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await db.execute(
-      "INSERT INTO users (name, email, password, role, matric_number, department, faculty) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      [name, email, hashedPassword, role, matric_number, department, faculty],
+    const [result] = await db.execute(
+      `INSERT INTO users
+      (name,email,password,role,matric_number,department,faculty)
+      VALUES (?,?,?,?,?,?,?)`,
+      [
+        name,
+        email,
+        hashedPassword,
+        role,
+        matric_number,
+        department,
+        faculty,
+      ]
     );
 
-    res.json({ message: "User registered successfully" });
+    // Save face image if it's a student
+    if (role === "student" && req.file) {
+      await db.execute(
+        `INSERT INTO user_faces (user_id, image_path)
+         VALUES (?, ?)`,
+        [result.insertId, req.file.path]
+      );
+    }
+
+    res.json({
+      success: true,
+      message: "User registered successfully",
+    });
+
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
   }
 });
 
