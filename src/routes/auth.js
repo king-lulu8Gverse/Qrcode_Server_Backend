@@ -5,6 +5,8 @@ import db from "../../db.js";
 import dotenv from "dotenv";
 import { upload } from "../middleware/upload.js";
 
+import cloudinary from "../config/cloudinary.js";
+import streamifier from "streamifier";
 dotenv.config();
 
 const router = express.Router();
@@ -36,13 +38,26 @@ router.post("/register", upload.single("face"), async (req, res) => {
     console.log("Body:", req.body);
     console.log("File:", req.file);
     if (role === "student" && req.file) {
-      console.log("File:", req.file);
-      console.log("Descriptor:", descriptor);
+      const uploadResult = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          {
+            folder: "TechTendance/Faces",
+          },
+          (error, result) => {
+            if (error) return reject(error);
+            resolve(result);
+          },
+        );
+
+        streamifier.createReadStream(req.file.buffer).pipe(stream);
+      });
+
+      console.log(uploadResult.secure_url);
 
       await db.execute(
         `INSERT INTO user_faces (user_id, image_path, descriptor)
      VALUES (?, ?, ?)`,
-        [result.insertId, req.file.path, descriptor],
+        [result.insertId, uploadResult.secure_url, descriptor],
       );
     }
 
