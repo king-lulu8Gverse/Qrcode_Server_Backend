@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import db from "../../db.js";
 import dotenv from "dotenv";
 import { upload } from "../middleware/upload.js";
-
+import authMiddleware from "../middleware/authMiddleware.js";
 import cloudinary from "../config/cloudinary.js";
 import streamifier from "streamifier";
 dotenv.config();
@@ -111,6 +111,69 @@ router.post("/login", async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+router.post("/verify-face", authMiddleware, async (req, res) => {
+  try {
+    const { descriptor } = req.body;
+
+    if (!descriptor) {
+      return res.status(400).json({
+        success: false,
+        message: "No descriptor received",
+      });
+    }
+
+    const [rows] = await db.execute(
+      "SELECT descriptor FROM user_faces WHERE user_id = ?",
+      [req.user.id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No enrolled face found",
+      });
+    }
+
+    const storedDescriptor = JSON.parse(rows[0].descriptor);
+
+    const liveDescriptor = JSON.parse(descriptor);
+
+    let distance = 0;
+
+    for (let i = 0; i < storedDescriptor.length; i++) {
+      distance += Math.pow(
+        storedDescriptor[i] - liveDescriptor[i],
+        2
+      );
+    }
+
+    distance = Math.sqrt(distance);
+
+    console.log("Face Distance:", distance);
+
+    if (distance < 0.55) {
+      return res.json({
+        success: true,
+        verified: true,
+      });
+    }
+
+    return res.json({
+      success: false,
+      verified: false,
+      message: "Face does not match",
+    });
+
+  } catch (err) {
+    console.error(err);
+
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
   }
 });
 
