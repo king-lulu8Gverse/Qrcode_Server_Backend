@@ -154,28 +154,60 @@ router.post("/:token", authMiddleware, async (req, res) => {
   try {
     const [sessions] = await db.execute(
       "SELECT * FROM sessions WHERE session_token = ? AND is_active = TRUE",
-      [req.params.token],
+      [req.params.token]
     );
 
     if (sessions.length === 0) {
-      return res.status(400).json({ message: "Invalid or expired session" });
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired session",
+      });
     }
 
     const session = sessions[0];
 
+    // Check if attendance already exists
+    const [existing] = await db.execute(
+      `SELECT id
+       FROM attendance
+       WHERE session_id = ? AND student_id = ?`,
+      [session.id, req.user.id]
+    );
+
+    if (existing.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Attendance has already been marked.",
+      });
+    }
+
+    // Mark attendance
     await db.execute(
-      "INSERT INTO attendance (session_id, student_id) VALUES (?, ?)",
-      [session.id, req.user.id],
+      `INSERT INTO attendance (session_id, student_id)
+       VALUES (?, ?)`,
+      [session.id, req.user.id]
     );
 
     const [student] = await db.execute(
-      "SELECT name, matric_number, department, faculty FROM users WHERE id = ?",
-      [req.user.id],
+      `SELECT name, matric_number, department, faculty
+       FROM users
+       WHERE id = ?`,
+      [req.user.id]
     );
 
-    res.json({ message: "Attendance marked", student: student[0] });
+    res.json({
+      success: true,
+      message: "Attendance marked successfully!",
+      student: student[0],
+    });
+
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
   }
 });
 
