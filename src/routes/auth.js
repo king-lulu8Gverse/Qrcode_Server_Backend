@@ -127,7 +127,7 @@ router.post("/verify-face", authMiddleware, async (req, res) => {
 
     const [rows] = await db.execute(
       "SELECT descriptor FROM user_faces WHERE user_id = ?",
-      [req.user.id]
+      [req.user.id],
     );
 
     if (rows.length === 0) {
@@ -137,17 +137,16 @@ router.post("/verify-face", authMiddleware, async (req, res) => {
       });
     }
 
+    console.log("Stored descriptor:");
+    console.log(rows[0].descriptor);
     const storedDescriptor = JSON.parse(rows[0].descriptor);
 
-    const liveDescriptor = JSON.parse(descriptor);
-
+    const liveDescriptor =
+      typeof descriptor === "string" ? JSON.parse(descriptor) : descriptor;
     let distance = 0;
 
     for (let i = 0; i < storedDescriptor.length; i++) {
-      distance += Math.pow(
-        storedDescriptor[i] - liveDescriptor[i],
-        2
-      );
+      distance += Math.pow(storedDescriptor[i] - liveDescriptor[i], 2);
     }
 
     distance = Math.sqrt(distance);
@@ -166,7 +165,6 @@ router.post("/verify-face", authMiddleware, async (req, res) => {
       verified: false,
       message: "Face does not match",
     });
-
   } catch (err) {
     console.error(err);
 
