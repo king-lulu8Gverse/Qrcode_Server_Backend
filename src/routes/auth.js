@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import db from "../../db.js";
 import dotenv from "dotenv";
-import {upload} from "../middleware/upload.js";
+import { upload } from "../middleware/upload.js";
 
 dotenv.config();
 
@@ -19,6 +19,7 @@ router.post("/register", upload.single("face"), async (req, res) => {
     matric_number,
     department,
     faculty,
+    descriptor,
   } = req.body;
 
   try {
@@ -28,26 +29,20 @@ router.post("/register", upload.single("face"), async (req, res) => {
       `INSERT INTO users
       (name,email,password,role,matric_number,department,faculty)
       VALUES (?,?,?,?,?,?,?)`,
-      [
-        name,
-        email,
-        hashedPassword,
-        role,
-        matric_number,
-        department,
-        faculty,
-      ]
+      [name, email, hashedPassword, role, matric_number, department, faculty],
     );
 
     // Save face image if it's a student
     console.log("Body:", req.body);
-console.log("File:", req.file);
-    if (role === "student") {
-      console.log(req.file);
+    console.log("File:", req.file);
+    if (role === "student" && req.file) {
+      console.log("File:", req.file);
+      console.log("Descriptor:", descriptor);
+
       await db.execute(
         `INSERT INTO user_faces (user_id, image_path, descriptor)
-         VALUES (?, ?, ?)`,
-        [result.insertId, req.file.path, req.file.descriptor]
+     VALUES (?, ?, ?)`,
+        [result.insertId, req.file.path, descriptor],
       );
     }
 
@@ -55,7 +50,6 @@ console.log("File:", req.file);
       success: true,
       message: "User registered successfully",
     });
-
   } catch (err) {
     console.error(err);
     res.status(500).json({
