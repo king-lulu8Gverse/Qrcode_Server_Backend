@@ -37,6 +37,9 @@ router.post("/register", upload.single("face"), async (req, res) => {
     // Save face image if it's a student
     console.log("Body:", req.body);
     console.log("File:", req.file);
+    console.log("Descriptor received:", descriptor);
+    console.log("Descriptor type:", typeof descriptor);
+    console.log("Descriptor length:", descriptor?.length);
     if (role === "student" && req.file) {
       const uploadResult = await new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
